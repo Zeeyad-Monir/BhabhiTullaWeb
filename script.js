@@ -405,10 +405,8 @@ document.addEventListener('DOMContentLoaded', function() {
       updateStatus(`${throwAwayPlayer.name} played a throw-away card (${throwAwayCard.value} of ${throwAwayCard.suit})! 
           ${playerWithHighestLeadCard.name} must pick up all cards.`);
       
-      // Add all cards from trick pile to highest lead card player's hand
-      gameState.trickPile.forEach(play => {
-          playerWithHighestLeadCard.hand.push(play.card);
-      });
+      // Render the game to show the throw-away card on the table
+      renderGame();
       
       // Highlight the player who has to pick up the cards
       const penaltyPlayerArea = document.getElementById(`player-${gameState.highestLeadCardIndex}`);
@@ -416,38 +414,46 @@ document.addEventListener('DOMContentLoaded', function() {
           penaltyPlayerArea.classList.add('penalty-pickup');
       }
       
-      // Clear the trick pile and prepare for next round
+      // First delay to show the throw-away card on the table for a few seconds
       setTimeout(() => {
-          // Set the next player to be the player with the highest lead card
-          let nextPlayerIndex = gameState.highestLeadCardIndex;
+          // Add all cards from trick pile to highest lead card player's hand
+          gameState.trickPile.forEach(play => {
+              playerWithHighestLeadCard.hand.push(play.card);
+          });
           
-          // Skip players who are out (should not happen but added as a safety check)
-          while (gameState.players[nextPlayerIndex].isOut) {
-              nextPlayerIndex = (nextPlayerIndex + 1) % gameState.players.length;
-          }
-          
-          gameState.currentPlayerIndex = nextPlayerIndex;
-          gameState.trickPile = [];
-          gameState.leadSuit = null;
-          gameState.leadCardValue = null;
-          gameState.trickInterrupted = false;
-          gameState.highestLeadCardIndex = -1;
-          
-          if (penaltyPlayerArea) {
-              penaltyPlayerArea.classList.remove('penalty-pickup');
-          }
-          
-          updateStatus(`${playerWithHighestLeadCard.name} picked up the trick. 
-              Any remaining players in this round don't get to play. ${gameState.players[nextPlayerIndex].name}'s turn to lead.`);
-          
-          // Re-render game state
-          renderGame();
-          
-          // If next player is AI, let it play
-          if (!gameState.players[nextPlayerIndex].isHuman) {
-              setTimeout(playAITurn, 1000);
-          }
-      }, 2500);
+          // Clear the trick pile and prepare for next round
+          setTimeout(() => {
+              // Set the next player to be the player with the highest lead card
+              let nextPlayerIndex = gameState.highestLeadCardIndex;
+              
+              // Skip players who are out (should not happen but added as a safety check)
+              while (gameState.players[nextPlayerIndex].isOut) {
+                  nextPlayerIndex = (nextPlayerIndex + 1) % gameState.players.length;
+              }
+              
+              gameState.currentPlayerIndex = nextPlayerIndex;
+              gameState.trickPile = [];
+              gameState.leadSuit = null;
+              gameState.leadCardValue = null;
+              gameState.trickInterrupted = false;
+              gameState.highestLeadCardIndex = -1;
+              
+              if (penaltyPlayerArea) {
+                  penaltyPlayerArea.classList.remove('penalty-pickup');
+              }
+              
+              updateStatus(`${playerWithHighestLeadCard.name} picked up the trick. 
+                  Any remaining players in this round don't get to play. ${gameState.players[nextPlayerIndex].name}'s turn to lead.`);
+              
+              // Re-render game state
+              renderGame();
+              
+              // If next player is AI, let it play
+              if (!gameState.players[nextPlayerIndex].isHuman) {
+                  setTimeout(playAITurn, 1000);
+              }
+          }, 1500);
+      }, 2000); // Wait 2 seconds to display the throw-away card before continuing
   }
   
   function nextPlayer() {

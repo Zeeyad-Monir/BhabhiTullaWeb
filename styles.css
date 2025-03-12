@@ -1,46 +1,230 @@
+/* 
+  ----------------------------------------------------------
+  GLOBAL RESET & FONTS
+  ----------------------------------------------------------
+*/
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
 }
 
+/* 
+  Optional: Import a fancy font for the main title
+  Uncomment or replace with your choice:
+  
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+*/
+
+/* 
+  ----------------------------------------------------------
+  BODY & BACKGROUND
+  ----------------------------------------------------------
+*/
 body {
-  background-color: #264653;
-  color: white;
+  /* Lively gradient background */
+  background: linear-gradient(to bottom right, #0f2027, #203a43, #2c5364);
+  background-size: 400% 400%;
+  color: #ffffff;
+  font-family: Arial, sans-serif;
   padding: 20px;
+  overflow-x: hidden; /* Avoid horizontal scroll from parallax */
+  position: relative;
+  animation: gradientShift 15s ease infinite; /* Slowly shift the gradient */
 }
 
+/* Animate the gradient to shift colors over time */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 
+  ----------------------------------------------------------
+  HEADER & TITLE
+  ----------------------------------------------------------
+*/
 header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
+  position: relative;
 }
 
 h1 {
-  font-size: 2.5rem;
+  /* Large, stylized text with golden glow */
+  font-size: 4rem;
+  font-family: 'Playfair Display', serif; /* If imported, else fallback below */
+  /* fallback: font-family: 'Times New Roman', serif; */
+  color: #ffd700;
+  text-shadow: 
+    0 0 5px rgba(255, 215, 0, 0.7),
+    0 0 10px rgba(255, 215, 0, 0.5),
+    0 0 20px rgba(255, 215, 0, 0.3);
   margin-bottom: 10px;
+  margin-top: 50px;
+  letter-spacing: 2px;
 }
 
+/* 
+  ----------------------------------------------------------
+  BUTTONS: PRIMARY & SECONDARY
+  ----------------------------------------------------------
+*/
+
+/* Base Button Styles */
 button {
-  background-color: #e76f51;
   border: none;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 1rem;
   margin: 5px;
+  transition: all 0.3s ease;
+  font-weight: 600;
 }
 
-button:hover {
-  background-color: #f4a261;
+/* Primary Button (e.g. "Start Game") */
+.primary-button {
+  background: linear-gradient(45deg, #FFD700, #FFA500);
+  color: #000;
+  padding: 14px 24px;
+  box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
 }
 
+/* Hover effect: intensify gradient, slight scale */
+.primary-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(255, 215, 0, 0.6);
+}
+
+/* Sparkle effect for the primary button (subtle glint on the gold) */
+.sparkle-button {
+  position: relative;
+}
+
+.sparkle-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  transform: skewX(-20deg);
+  transition: all 0.5s;
+}
+
+.sparkle-button:hover::after {
+  width: 130%;
+  opacity: 0.3;
+  transform: skewX(-20deg) translateX(100%);
+}
+
+/* Secondary Buttons (New Game, Game Rules) */
+.secondary-button {
+  background-color: #172a35;
+  color: #ffffff;
+  padding: 12px 20px;
+  border: 2px solid #00c9a7; /* Teal border for pop */
+  box-shadow: 0 0 10px rgba(0, 201, 167, 0.3);
+}
+
+.secondary-button:hover {
+  background-color: #1f3948;
+  box-shadow: 0 0 20px rgba(0, 201, 167, 0.5);
+}
+
+/* 
+  ----------------------------------------------------------
+  FUN BOUNCE ANIMATION FOR "START GAME"
+  ----------------------------------------------------------
+*/
+.bounce-in {
+  animation: bounceIn 1.2s ease forwards;
+  opacity: 0;
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(-20px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05) translateY(10px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.95) translateY(-5px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 
+  ----------------------------------------------------------
+  CONTAINER & MAIN MENU
+  ----------------------------------------------------------
+*/
 .container {
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
 }
 
+.menu-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.menu-content {
+  /* Glassmorphic style panel */
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  padding: 40px;
+  animation: fadeIn 0.8s ease forwards;
+}
+
+.menu-content h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+/* Label + Dropdown Container */
+.dropdown-container {
+  margin-bottom: 20px;
+}
+
+select {
+  margin-left: 10px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  outline: none;
+  cursor: pointer;
+}
+
+/* 
+  ----------------------------------------------------------
+  GAME BOARD & IN-GAME ELEMENTS
+  ----------------------------------------------------------
+*/
 .game-board {
   display: flex;
   flex-direction: column;
@@ -148,6 +332,11 @@ button:hover {
   color: black;
 }
 
+/* 
+  ----------------------------------------------------------
+  MODALS
+  ----------------------------------------------------------
+*/
 .modal {
   display: none;
   position: fixed;
@@ -168,6 +357,7 @@ button:hover {
   max-width: 600px;
   width: 80%;
   color: white;
+  position: relative;
 }
 
 .modal-title {
@@ -185,41 +375,127 @@ button:hover {
   cursor: pointer;
 }
 
-.options {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
+/* 
+  ----------------------------------------------------------
+  RESPONSIVENESS
+  ----------------------------------------------------------
+*/
 @media screen and (max-width: 768px) {
   .card {
-      width: 50px;
-      height: 70px;
-      margin: 3px;
+    width: 50px;
+    height: 70px;
+    margin: 3px;
   }
-  
   .card-value {
-      font-size: 1.2rem;
+    font-size: 1.2rem;
   }
-  
   .card-suit {
-      font-size: 1rem;
+    font-size: 1rem;
   }
 }
 
-/* Current player highlight */
+/* 
+  ----------------------------------------------------------
+  GAME INTERACTION HIGHLIGHTS
+  ----------------------------------------------------------
+*/
 .player-area.current-player {
   background-color: rgba(231, 111, 81, 0.3);
   border: 2px solid #e76f51;
 }
 
-/* Trick winner highlight */
 .trick-winner {
   background-color: rgba(42, 157, 143, 0.3);
   animation: pulse 1s;
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0px rgba(42, 157, 143, 0.7); }
-  100% { box-shadow: 0 0 0 20px rgba(42, 157, 143, 0); }
+  0% {
+    box-shadow: 0 0 0 0px rgba(42, 157, 143, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 20px rgba(42, 157, 143, 0);
+  }
+}
+
+/* 
+  ----------------------------------------------------------
+  PARALLAX & ANIMATED FLOATING CARDS
+  ----------------------------------------------------------
+*/
+.floating-cards-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* So clicks pass through to UI below */
+  overflow: hidden;
+  z-index: -1; /* Behind main content */
+}
+
+.floating-card {
+  position: absolute;
+  width: 80px;
+  height: 110px;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.15; 
+  animation: floatCards 8s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Replace with actual card images if you want */
+.card1 {
+  background-image: url("https://via.placeholder.com/80x110?text=Card1");
+  top: 10%;
+  left: 15%;
+  animation-delay: 0s;
+}
+.card2 {
+  background-image: url("https://via.placeholder.com/80x110?text=Card2");
+  top: 40%;
+  left: 70%;
+  animation-delay: 2s;
+}
+.card3 {
+  background-image: url("https://via.placeholder.com/80x110?text=Card3");
+  top: 70%;
+  left: 25%;
+  animation-delay: 4s;
+}
+.card4 {
+  background-image: url("https://via.placeholder.com/80x110?text=Card4");
+  top: 85%;
+  left: 80%;
+  animation-delay: 6s;
+}
+
+/* Subtle floating up/down + slight horizontal drift */
+@keyframes floatCards {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px) rotate(3deg);
+  }
+  100% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+  }
+}
+
+/* 
+  ----------------------------------------------------------
+  FADE IN (for the main menu panel)
+  ----------------------------------------------------------
+*/
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

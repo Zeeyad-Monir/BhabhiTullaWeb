@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const playersContainer = document.getElementById('players-container');
   const trickPile = document.getElementById('trick-pile');
   const statusMessage = document.getElementById('status-message');
+  const backToMenuBtn = document.getElementById('back-to-menu');
   
   // Modals
   const rulesModal = document.getElementById('rules-modal');
@@ -18,6 +19,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const endGameModal = document.getElementById('end-game-modal');
   const endGameMessage = document.getElementById('end-game-message');
   const playAgainBtn = document.getElementById('play-again-btn');
+  
+  // Avatar emojis for players
+  const avatarEmojis = ['👤', '👩', '👨', '🧔', '👱‍♀️', '👴', '👵', '🧓'];
   
   // Game state
   let gameState = {
@@ -35,6 +39,8 @@ document.addEventListener('DOMContentLoaded', function() {
       highestLeadCardIndex: -1, // Index of the player with highest lead suit card
       nextTurnSkipped: false // Track if the next player's turn should be skipped
   };
+
+  
   
   // Card values and suits
   const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
@@ -57,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
   closeModalBtn.addEventListener('click', hideRules);
   startGameBtn.addEventListener('click', startGame);
   playAgainBtn.addEventListener('click', resetGame);
+  backToMenuBtn.addEventListener('click', showSetup);
   
   // Functions
   function showSetup() {
@@ -113,7 +120,8 @@ document.addEventListener('DOMContentLoaded', function() {
               name: i === 0 ? 'You' : `Player ${i}`,
               hand: [],
               isHuman: i === 0, // First player is human, rest are AI
-              isOut: false
+              isOut: false,
+              avatar: i === 0 ? '👤' : avatarEmojis[Math.floor(Math.random() * (avatarEmojis.length - 1) + 1)]
           });
       }
       
@@ -125,6 +133,26 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       return players;
+  }
+  
+  function getPlayerPosition(playerIndex, totalPlayers) {
+      // For the human player (always at index 0), always return bottom
+      if (playerIndex === 0) return 'bottom';
+      
+      // Simple positioning based on player count - fixed placement
+      if (totalPlayers <= 4) {
+          // For 3-4 players: human at bottom, others at fixed positions
+          const positions = ['bottom', 'top', 'left', 'right'];
+          return positions[playerIndex];
+      } else if (totalPlayers <= 6) {
+          // For 5-6 players
+          const positions = ['bottom', 'top', 'left', 'right', 'top-left', 'top-right'];
+          return positions[playerIndex];
+      }
+      
+      // Fallback for any other case
+      const positions = ['bottom', 'top', 'left', 'right', 'top-left', 'top-right'];
+      return positions[playerIndex % positions.length];
   }
   
   function startGame() {
@@ -187,28 +215,62 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Render players and their hands
       gameState.players.forEach((player, index) => {
+          const playerPosition = getPlayerPosition(index, gameState.players.length);
+          
           const playerArea = document.createElement('div');
           playerArea.className = 'player-area';
           playerArea.id = `player-${index}`;
+          playerArea.dataset.position = playerPosition;
           
           if (index === gameState.currentPlayerIndex && !gameState.gameEnded) {
               playerArea.classList.add('current-player');
           }
           
+          // Create player avatar
+          const playerAvatar = document.createElement('div');
+          playerAvatar.className = 'player-avatar';
+          playerAvatar.textContent = player.avatar;
+          
+          // Create player nameplate
+          const playerNameplate = document.createElement('div');
+          playerNameplate.className = 'player-nameplate';
+          
           const playerName = document.createElement('div');
           playerName.className = 'player-name';
-          playerName.textContent = `${player.name} (${player.hand.length} cards)`;
+          playerName.textContent = player.name;
+          
+          const cardCount = document.createElement('div');
+          cardCount.className = 'card-count';
+          cardCount.textContent = `${player.hand.length} cards`;
           
           if (player.isOut) {
-              playerName.textContent += ' - OUT';
+              cardCount.textContent = 'OUT';
           }
+          
+          playerNameplate.appendChild(playerName);
+          playerNameplate.appendChild(cardCount);
           
           const playerHand = document.createElement('div');
           playerHand.className = 'player-hand';
           playerHand.id = `hand-${index}`;
           
-          playerArea.appendChild(playerName);
-          playerArea.appendChild(playerHand);
+          // Add elements in correct order based on position
+          if (playerPosition === 'bottom') {
+              playerArea.appendChild(playerHand);
+              playerArea.appendChild(playerAvatar);
+              playerArea.appendChild(playerNameplate);
+          } else if (playerPosition === 'left' || playerPosition === 'right') {
+              // For side positions, change the arrangement
+              playerArea.appendChild(playerNameplate);
+              playerArea.appendChild(playerAvatar);
+              playerArea.appendChild(playerHand);
+          } else {
+              // Top positions
+              playerArea.appendChild(playerNameplate);
+              playerArea.appendChild(playerAvatar);
+              playerArea.appendChild(playerHand);
+          }
+          
           playersContainer.appendChild(playerArea);
           
           // Render cards for this player
@@ -219,14 +281,23 @@ document.addEventListener('DOMContentLoaded', function() {
                   playerHand.appendChild(cardElement);
               });
           } else {
-              // Show card backs for AI players
-              player.hand.forEach((_, cardIndex) => {
+              // Show card backs for AI players - limit cards shown for visual clarity
+              const maxCards = playerPosition === 'top' ? 7 : 5;
+              const displayCount = Math.min(player.hand.length, maxCards);
+              
+              for (let i = 0; i < displayCount; i++) {
                   const cardBack = document.createElement('div');
-                  cardBack.className = 'card';
-                  cardBack.textContent = '🂠';
-                  cardBack.style.backgroundColor = '#e76f51';
+                  cardBack.className = 'card-back';
                   playerHand.appendChild(cardBack);
-              });
+              }
+              
+              // If there are more cards than we're showing, add a count indicator
+              if (player.hand.length > displayCount) {
+                  const moreCards = document.createElement('div');
+                  moreCards.className = 'card-more';
+                  moreCards.textContent = `+${player.hand.length - displayCount}`;
+                  playerHand.appendChild(moreCards);
+              }
           }
       });
       

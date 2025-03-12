@@ -58,10 +58,25 @@
         </div>
 
         <div id="game-container" style="display: none;">
+            <!-- Card Table Design -->
             <div class="game-board">
-                <div id="status-message"></div>
-                <div id="trick-pile" class="trick-pile"></div>
-                <div id="players-container" class="players-container"></div>
+                <div class="card-table">
+                    <!-- Turn indicator and status message -->
+                    <div id="status-message" class="status-message"></div>
+                    
+                    <!-- Center trick pile area -->
+                    <div id="trick-pile" class="trick-pile"></div>
+                    
+                    <!-- Players positioned around the table -->
+                    <div id="players-container" class="players-container">
+                        <!-- Players will be positioned by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Game controls -->
+                <div class="game-controls">
+                    <button id="back-to-menu" class="btn">Back to Menu</button>
+                </div>
             </div>
         </div>
 

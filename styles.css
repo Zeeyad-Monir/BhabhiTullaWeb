@@ -55,11 +55,11 @@ body {
 
 /* When game is active, reduce background element opacity */
 body.game-active .floating-card {
-  opacity: 0.15;
+  opacity: 0.05;
 }
 
 body.game-active .card-design {
-  opacity: 0.3;
+  opacity: 0.1;
 }
 
 @keyframes float {
@@ -273,87 +273,249 @@ option {
   background: linear-gradient(45deg, #f4a261, #e9c46a);
 }
 
-/* Game area styles - keeping original with improvements */
+/* ----- CARD TABLE DESIGN ----- */
 .game-board {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 20px;
   width: 100%;
+  max-width: 100vw; /* Prevent horizontal overflow */
+  overflow-x: hidden;
 }
 
-#status-message {
+.card-table {
+  width: 90%;
+  max-width: 800px;
+  aspect-ratio: 4/3; /* Force a rectangular shape */
+  background: #2a7d45; /* Felt green */
+  border-radius: 15px;
+  border: 12px solid #65402a; /* Wooden border */
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  margin: 20px auto;
+  padding: 20px;
+  overflow: visible;
+}
+
+/* Wood grain texture for border */
+.card-table::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
+  background-image: 
+    repeating-linear-gradient(
+      45deg, 
+      rgba(101, 64, 42, 0.5) 0px, 
+      rgba(121, 85, 61, 0.5) 2px, 
+      rgba(101, 64, 42, 0.5) 4px
+    );
+  z-index: -1;
+  border-radius: 25px;
+  pointer-events: none;
+}
+
+/* Felt texture */
+.card-table::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23ffffff' fill-opacity='0.05' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.status-message {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  z-index: 10;
+  min-width: 180px;
   text-align: center;
-  font-size: 1.2rem;
-  margin: 10px 0;
-  height: 30px;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 10px 20px;
-  border-radius: 10px;
-  min-height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(5px);
+  max-width: 80%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .trick-pile {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 120px;
+  border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
-  height: 150px;
-  background-color: rgba(42, 157, 143, 0.3);
-  border-radius: 20px;
-  margin: 20px 0;
-  padding: 10px;
-  position: relative;
+  background: rgba(255, 255, 255, 0.05);
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
-}
-
-.trick-pile-card {
-  position: absolute;
-  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  z-index: 4;
 }
 
 .players-container {
-  display: flex;
-  flex-direction: column;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  gap: 15px;
+  height: 100%;
 }
 
+/* Player positions */
 .player-area {
+  position: absolute;
+  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 15px;
-  border-radius: 15px;
-  background-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  z-index: 5;
+}
+
+/* Bottom player position (You) */
+.player-area[data-position="bottom"] {
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 80%;
+}
+
+/* Top player position */
+.player-area[data-position="top"] {
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
+}
+
+/* Left player position */
+.player-area[data-position="left"] {
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Right player position */
+.player-area[data-position="right"] {
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Additional positions for 5-6 players */
+.player-area[data-position="top-left"] {
+  top: 15%;
+  left: 15%;
+}
+
+.player-area[data-position="top-right"] {
+  top: 15%;
+  right: 15%;
+}
+
+.player-nameplate {
+  background: rgba(29, 53, 87, 0.8);
+  border-radius: 8px;
+  padding: 5px 10px;
+  margin-bottom: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 10;
+  min-width: 100px;
+  position: relative;
 }
 
 .player-name {
-  font-size: 1.2rem;
-  margin-bottom: 10px;
-  font-weight: 500;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 2px;
 }
 
+.card-count {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Player avatars */
+.player-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #e76f51;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  border: 2px solid white;
+  font-size: 1.5rem;
+  z-index: 10;
+  position: relative;
+}
+
+/* Human player's hand */
+.player-area[data-position="bottom"] .player-hand {
+  display: flex;
+  justify-content: center;
+  max-width: 100%;
+  margin-bottom: 15px;
+}
+
+/* AI players' hands - all horizontal orientation */
 .player-hand {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
+  flex-wrap: nowrap;
   justify-content: center;
-  min-height: 100px;
-  gap: 5px;
 }
 
+.player-area[data-position="top"] .player-hand {
+  margin-top: 15px;
+}
+
+.player-area[data-position="left"] .player-hand {
+  margin-right: 15px;
+  /* Transform for left side */
+  transform: rotate(90deg);
+  transform-origin: bottom left;
+  position: relative;
+  left: 30px;
+  top: -30px;
+}
+
+.player-area[data-position="right"] .player-hand {
+  margin-left: 15px;
+  /* Transform for right side */
+  transform: rotate(-90deg);
+  transform-origin: bottom right;
+  position: relative;
+  right: 30px;
+  top: -30px;
+}
+
+/* ---- CARDS ---- */
 .card {
   width: 60px;
   height: 85px;
   background-color: white;
-  color: black;
-  border-radius: 10px;
-  margin: 5px;
+  border-radius: 5px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -362,30 +524,76 @@ option {
   user-select: none;
   transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  margin: 0 -15px;
 }
 
-.card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+/* Card hover effect for human player */
+.player-area[data-position="bottom"] .card:hover {
+  transform: translateY(-20px) scale(1.1);
+  z-index: 10;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+  margin: 0 2px;
 }
 
-.card.selected {
-  box-shadow: 0 0 10px 5px #f4a261;
+/* Card backs for AI players */
+.card-back {
+  width: 60px;
+  height: 85px;
+  background-color: #e76f51;
+  border-radius: 5px;
+  margin: 0 -15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
-.card.disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+/* Card back pattern */
+.card-back::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
+  background-image: 
+    repeating-linear-gradient(
+      45deg, 
+      rgba(255, 255, 255, 0.1) 0px, 
+      rgba(255, 255, 255, 0.1) 2px, 
+      transparent 2px, 
+      transparent 4px
+    );
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+/* Card design elements */
 .card-value {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: bold;
+  position: absolute;
+  top: 5px;
+  left: 5px;
 }
 
 .card-suit {
-  font-size: 1.2rem;
+  font-size: 1.8rem;
+  position: absolute;
+  bottom: 50%;
+  right: 50%;
+  transform: translate(50%, 50%);
+}
+
+.card-more {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  position: relative;
+  margin-left: 5px;
+  z-index: 10;
 }
 
 .red {
@@ -396,7 +604,88 @@ option {
   color: #1d3557;
 }
 
-/* Modal styles with improved design */
+/* Position adjustments for AI hands */
+.player-area[data-position="left"] .card,
+.player-area[data-position="left"] .card-back {
+  margin: 0 -10px;
+}
+
+.player-area[data-position="right"] .card,
+.player-area[data-position="right"] .card-back {
+  margin: 0 -10px;
+}
+
+/* Card in trick pile */
+.trick-pile-card {
+  position: absolute;
+  transition: all 0.3s ease;
+  z-index: 5;
+}
+
+/* Card state indicators */
+.card.valid-card {
+  box-shadow: 0 0 10px 2px rgba(42, 157, 143, 0.7);
+}
+
+.card.throw-away {
+  box-shadow: 0 0 10px 2px rgba(230, 57, 70, 0.7);
+}
+
+.card.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Current player highlight */
+.player-area.current-player .player-avatar {
+  box-shadow: 0 0 0 4px #e9c46a, 0 0 20px #e9c46a;
+  animation: pulse 1.5s infinite;
+}
+
+.player-area.current-player .player-nameplate {
+  background: rgba(233, 196, 106, 0.8);
+  color: #264653;
+}
+
+/* Trick winner highlight */
+.trick-winner .player-avatar {
+  box-shadow: 0 0 0 4px #2a9d8f, 0 0 20px #2a9d8f;
+  animation: winner-pulse 1s;
+}
+
+/* Penalty highlight */
+.penalty-pickup .player-avatar {
+  box-shadow: 0 0 0 4px #e63946, 0 0 20px #e63946;
+  animation: penalty-pulse 1s;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(233, 196, 106, 0.7), 0 0 20px rgba(233, 196, 106, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(233, 196, 106, 0.5), 0 0 30px rgba(233, 196, 106, 0.3); }
+}
+
+@keyframes winner-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 2px rgba(42, 157, 143, 0.7); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); box-shadow: 0 0 0 8px rgba(42, 157, 143, 0); }
+}
+
+@keyframes penalty-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.7); }
+  10%, 30%, 50%, 70%, 90% { transform: scale(1.05) translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: scale(1.05) translateX(5px); }
+  100% { box-shadow: 0 0 0 8px rgba(230, 57, 70, 0); }
+}
+
+/* Game controls */
+.game-controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  gap: 20px;
+}
+
+/* Modal styles */
 .modal {
   display: none;
   position: fixed;
@@ -477,51 +766,51 @@ footer {
   animation: fadeIn 1s ease-out 1.5s both;
 }
 
-/* Current player highlight */
-.player-area.current-player {
-  background-color: rgba(231, 111, 81, 0.3);
-  border: 2px solid #e76f51;
-  transform: scale(1.02);
-}
-
-/* Trick winner highlight */
-.trick-winner {
-  background-color: rgba(42, 157, 143, 0.3);
-  animation: pulse 1s;
-}
-
-/* Penalty highlight */
-.penalty-pickup {
-  background-color: rgba(230, 57, 70, 0.3);
-  animation: shakePulse 1s;
-}
-
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0px rgba(42, 157, 143, 0.7); }
-  100% { box-shadow: 0 0 0 20px rgba(42, 157, 143, 0); }
-}
-
-@keyframes shakePulse {
-  0%, 100% { transform: translateX(0); box-shadow: 0 0 0 0px rgba(230, 57, 70, 0.7); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
-  100% { box-shadow: 0 0 0 20px rgba(230, 57, 70, 0); }
-}
-
-/* Valid and throw-away card indicators */
-.card.valid-card {
-  box-shadow: 0 0 5px 2px rgba(46, 196, 182, 0.5);
-}
-
-.card.throw-away {
-  box-shadow: 0 0 5px 2px rgba(230, 57, 70, 0.5);
-}
-
-.card.throw-away:hover {
-  box-shadow: 0 5px 15px rgba(230, 57, 70, 0.8);
-}
-
 /* Media queries for responsiveness */
+@media screen and (max-width: 960px) {
+  .card-table {
+    max-width: 95%;
+    border-width: 10px;
+    border-radius: 15px;
+  }
+  
+  .card-table::before {
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    border-radius: 20px;
+  }
+  
+  .player-area[data-position="top-left"] {
+    top: 15%;
+    left: 15%;
+  }
+  
+  .player-area[data-position="top-right"] {
+    top: 15%;
+    right: 15%;
+  }
+  
+  .card {
+    width: 50px;
+    height: 70px;
+    margin: 0 -12px;
+  }
+  
+  .card-back {
+    width: 50px;
+    height: 70px;
+    margin: 0 -12px;
+  }
+  
+  .player-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+}
+
 @media screen and (max-width: 768px) {
   h1 {
     font-size: 3rem;
@@ -532,17 +821,23 @@ footer {
   }
   
   .card {
-    width: 50px;
-    height: 70px;
-    margin: 3px;
+    width: 45px;
+    height: 63px;
+    margin: 0 -10px;
+  }
+  
+  .card-back {
+    width: 45px;
+    height: 63px;
+    margin: 0 -10px;
   }
   
   .card-value {
-    font-size: 1.2rem;
+    font-size: 1rem;
   }
   
   .card-suit {
-    font-size: 1rem;
+    font-size: 1.4rem;
   }
   
   .floating-card {
@@ -556,6 +851,37 @@ footer {
   
   .btn {
     width: 100%;
+    font-size: 1rem;
+    padding: 10px 20px;
+  }
+  
+  .player-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+  }
+  
+  .player-nameplate {
+    padding: 4px 8px;
+    min-width: 80px;
+  }
+  
+  .player-name {
+    font-size: 0.8rem;
+  }
+  
+  .card-count {
+    font-size: 0.7rem;
+  }
+  
+  .player-area[data-position="left"] .player-hand {
+    left: 20px;
+    top: -20px;
+  }
+  
+  .player-area[data-position="right"] .player-hand {
+    right: 20px;
+    top: -20px;
   }
 }
 
@@ -580,14 +906,69 @@ footer {
   
   .card {
     width: 40px;
-    height: 60px;
+    height: 56px;
+    margin: 0 -8px;
+  }
+  
+  .card-back {
+    width: 40px;
+    height: 56px;
+    margin: 0 -8px;
   }
   
   .card-value {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
   
   .card-suit {
+    font-size: 1.2rem;
+  }
+  
+  .card-table {
+    padding: 10px;
+    border-width: 8px;
+  }
+  
+  .card-table::before {
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    border-radius: 15px;
+  }
+  
+  .player-area[data-position="left"] .player-hand,
+  .player-area[data-position="right"] .player-hand {
+    transform: none;
+    position: static;
+  }
+  
+  .player-area[data-position="left"] {
+    left: 0;
+    top: 30%;
+  }
+  
+  .player-area[data-position="right"] {
+    right: 0;
+    top: 30%;
+  }
+  
+  .player-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    margin-bottom: 3px;
+    margin-top: 3px;
+  }
+  
+  .status-message {
     font-size: 0.8rem;
+    padding: 4px 10px;
+    min-width: 140px;
+  }
+  
+  .trick-pile {
+    width: 140px;
+    height: 100px;
   }
 }

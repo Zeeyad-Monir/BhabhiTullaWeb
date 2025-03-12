@@ -7,20 +7,45 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Floating background cards for visual effect -->
+    <div class="card-design" style="top: 15%; left: 5%; animation-delay: -2s;"></div>
+    <div class="card-design" style="top: 65%; left: 12%; animation-delay: -5s;"></div>
+    <div class="card-design" style="top: 25%; right: 8%; animation-delay: -8s;"></div>
+    <div class="card-design" style="top: 70%; right: 15%; animation-delay: -12s;"></div>
+    
+    <!-- Floating card animations -->
+    <div class="floating-card" style="top: 10%; left: 20%; animation-delay: -3s;">
+        <div class="value red">A</div>
+        <div class="suit red">♥</div>
+    </div>
+    <div class="floating-card" style="top: 65%; left: 80%; animation-delay: -7s;">
+        <div class="value black">K</div>
+        <div class="suit black">♠</div>
+    </div>
+    <div class="floating-card" style="top: 20%; left: 75%; animation-delay: -1s;">
+        <div class="value red">Q</div>
+        <div class="suit red">♦</div>
+    </div>
+    <div class="floating-card" style="top: 75%; left: 25%; animation-delay: -9s;">
+        <div class="value black">J</div>
+        <div class="suit black">♣</div>
+    </div>
+
     <div class="container">
         <header>
             <h1>Bhabhi Tulla</h1>
+            <div class="subtitle">A Classic Card Game of Skill and Strategy</div>
             <div class="options">
-                <button id="new-game-btn">New Game</button>
-                <button id="rules-btn">Game Rules</button>
+                <button id="new-game-btn" class="btn btn-primary">New Game</button>
+                <button id="rules-btn" class="btn">Game Rules</button>
             </div>
         </header>
 
-        <div id="setup-container">
+        <div id="setup-container" class="setup-container">
             <div id="player-setup">
-                <h2>Game Setup</h2>
-                <div>
-                    <label for="player-count">Number of Players:</label>
+                <h2 class="setup-heading">Game Setup</h2>
+                <div class="player-setup">
+                    <label for="player-count" class="setup-label">Number of Players:</label>
                     <select id="player-count">
                         <option value="3">3 Players</option>
                         <option value="4" selected>4 Players</option>
@@ -28,7 +53,7 @@
                         <option value="6">6 Players</option>
                     </select>
                 </div>
-                <button id="start-game-btn">Start Game</button>
+                <button id="start-game-btn" class="start-btn">Start Game</button>
             </div>
         </div>
 
@@ -39,6 +64,10 @@
                 <div id="players-container" class="players-container"></div>
             </div>
         </div>
+
+        <footer>
+            &copy; 2025 Bhabhi Tulla - Version 1.0
+        </footer>
     </div>
 
     <!-- Rules Modal -->
@@ -62,7 +91,7 @@
                 <p><strong>Card Rankings:</strong> Ace (high) > King > Queen > Jack > 10 > 9 > ... > 2</p>
                 <p><strong>Winning:</strong> The first player to get rid of all their cards wins. The last player with cards is the "Bhabhi" (loser).</p>
             </div>
-            <button id="close-rules">Close</button>
+            <button id="close-rules" class="btn">Close</button>
         </div>
     </div>
 
@@ -71,7 +100,7 @@
         <div class="modal-content">
             <h2 class="modal-title">Game Over</h2>
             <div class="modal-body" id="end-game-message"></div>
-            <button id="play-again-btn">Play Again</button>
+            <button id="play-again-btn" class="btn btn-primary">Play Again</button>
         </div>
     </div>
 

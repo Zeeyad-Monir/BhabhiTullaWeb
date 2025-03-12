@@ -29,7 +29,8 @@ document.addEventListener('DOMContentLoaded', function() {
       leadCardValue: null,
       gameStarted: false,
       gameEnded: false,
-      winners: []
+      winners: [],
+      firstTrick: true // Track if this is the first trick of the game
   };
   
   // Card values and suits
@@ -148,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
       gameState.gameStarted = true;
       gameState.gameEnded = false;
       gameState.winners = [];
+      gameState.firstTrick = true;
       
       // Hide setup, show game
       setupContainer.style.display = 'none';
@@ -183,6 +185,10 @@ document.addEventListener('DOMContentLoaded', function() {
           const playerName = document.createElement('div');
           playerName.className = 'player-name';
           playerName.textContent = `${player.name} (${player.hand.length} cards)`;
+          
+          if (player.isOut) {
+              playerName.textContent += ' - OUT';
+          }
           
           const playerHand = document.createElement('div');
           playerHand.className = 'player-hand';
@@ -249,8 +255,11 @@ document.addEventListener('DOMContentLoaded', function() {
           const player = gameState.players[playerIndex];
           
           if (player.isHuman && playerIndex === gameState.currentPlayerIndex && !gameState.gameEnded) {
+              cardElement.classList.add('playable');
+              
               if (isValidCard(player, card)) {
                   cardElement.addEventListener('click', () => playCard(playerIndex, cardIndex));
+                  cardElement.classList.add('valid-card');
               } else {
                   cardElement.classList.add('disabled');
               }
@@ -262,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   function isValidCard(player, card) {
       // First card of the game must be Ace of Spades
-      if (gameState.trickPile.length === 0 && gameState.winners.length === 0) {
+      if (gameState.firstTrick && gameState.trickPile.length === 0) {
           return card.suit === 'spades' && card.value === 'A';
       }
       
@@ -321,6 +330,11 @@ document.addEventListener('DOMContentLoaded', function() {
       if (gameState.trickPile.length === 1) {
           gameState.leadSuit = card.suit;
           gameState.leadCardValue = card.value;
+          
+          // First trick of the game is now complete
+          if (gameState.firstTrick) {
+              gameState.firstTrick = false;
+          }
       }
       
       // Check if player is out
@@ -341,7 +355,8 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       // Check if all players have played a card for this trick
-      if (gameState.trickPile.length === gameState.players.filter(p => !p.isOut).length) {
+      const activePlayers = gameState.players.filter(p => !p.isOut).length;
+      if (gameState.trickPile.length === activePlayers) {
           // End of trick
           setTimeout(endTrick, 1000);
       } else {
@@ -357,6 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Move to the next player who is still in the game
       let nextPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
       
+      // Continue looping until we find a player who's not out
       while (gameState.players[nextPlayerIndex].isOut) {
           nextPlayerIndex = (nextPlayerIndex + 1) % gameState.players.length;
       }
@@ -377,12 +393,19 @@ document.addEventListener('DOMContentLoaded', function() {
       const playerIndex = gameState.currentPlayerIndex;
       const player = gameState.players[playerIndex];
       
+      // Skip if player is already out (shouldn't happen but safeguard)
+      if (player.isOut) {
+          nextPlayer();
+          return;
+      }
+      
       // Find valid cards to play
       const validCards = player.hand.filter(card => isValidCard(player, card));
       
       if (validCards.length === 0) {
           // This shouldn't happen as there's always at least one valid card,
           // but just in case:
+          console.error("AI has no valid cards to play:", player.hand);
           updateStatus(`${player.name} has no valid cards to play!`);
           nextPlayer();
           return;
@@ -419,8 +442,19 @@ document.addEventListener('DOMContentLoaded', function() {
       cardIndex = player.hand.findIndex(card => 
           card.suit === cardToPlay.suit && card.value === cardToPlay.value);
       
+      if (cardIndex === -1) {
+          console.error("Card not found in player's hand:", cardToPlay, player.hand);
+          // Fallback - play first valid card
+          cardIndex = player.hand.findIndex(card => isValidCard(player, card));
+      }
+      
       // Play the card
-      playCard(playerIndex, cardIndex);
+      if (cardIndex !== -1) {
+          playCard(playerIndex, cardIndex);
+      } else {
+          console.error("No valid card found for AI player");
+          nextPlayer();
+      }
   }
   
   function endTrick() {
@@ -441,14 +475,27 @@ document.addEventListener('DOMContentLoaded', function() {
       const winnerIndex = winningPlay.playerIndex;
       const winner = gameState.players[winnerIndex];
       
+      // Check if the winner is already out (shouldn't happen)
+      if (winner.isOut) {
+          console.error("Winner is already out of the game:", winner);
+          // Find next active player to lead
+          let nextLeaderIndex = (winnerIndex + 1) % gameState.players.length;
+          while (gameState.players[nextLeaderIndex].isOut) {
+              nextLeaderIndex = (nextLeaderIndex + 1) % gameState.players.length;
+          }
+          gameState.currentPlayerIndex = nextLeaderIndex;
+      } else {
+          // Set the winner as the next player to lead
+          gameState.currentPlayerIndex = winnerIndex;
+      }
+      
       // Highlight the winner
       const winnerArea = document.getElementById(`player-${winnerIndex}`);
-      winnerArea.classList.add('trick-winner');
+      if (winnerArea) {
+          winnerArea.classList.add('trick-winner');
+      }
       
       updateStatus(`${winner.name} wins the trick with ${winningPlay.card.value} of ${winningPlay.card.suit}!`);
-      
-      // Set the winner as the next player to lead
-      gameState.currentPlayerIndex = winnerIndex;
       
       // Clear trick pile for the next trick
       setTimeout(() => {
@@ -456,15 +503,29 @@ document.addEventListener('DOMContentLoaded', function() {
           gameState.leadSuit = null;
           gameState.leadCardValue = null;
           
-          updateStatus(`${winner.name}'s turn to lead.`);
+          // Check if the winner is still in the game (could have gone out in this trick)
+          if (!winner.isOut) {
+              updateStatus(`${winner.name}'s turn to lead.`);
+          } else {
+              // Find next active player
+              let nextActiveIndex = (winnerIndex + 1) % gameState.players.length;
+              while (gameState.players[nextActiveIndex].isOut) {
+                  nextActiveIndex = (nextActiveIndex + 1) % gameState.players.length;
+              }
+              gameState.currentPlayerIndex = nextActiveIndex;
+              updateStatus(`${gameState.players[nextActiveIndex].name}'s turn to lead.`);
+          }
           
-          winnerArea.classList.remove('trick-winner');
+          if (winnerArea) {
+              winnerArea.classList.remove('trick-winner');
+          }
           
           // Re-render the game state
           renderGame();
           
-          // If winner is AI, let it play
-          if (!winner.isHuman && !winner.isOut) {
+          // If next player is AI, let it play
+          const nextPlayer = gameState.players[gameState.currentPlayerIndex];
+          if (!nextPlayer.isHuman && !nextPlayer.isOut) {
               setTimeout(playAITurn, 1000);
           }
       }, 1500);

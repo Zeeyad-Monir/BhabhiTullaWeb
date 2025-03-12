@@ -32,8 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
       winners: [],
       firstTrick: true, // Track if this is the first trick of the game
       trickInterrupted: false, // Track if a throw-away card interrupted the trick
-      highestLeadCardIndex: -1, // Index of the player with highest lead suit card
-      nextTurnSkipped: false // Track if the next player's turn should be skipped
+      highestLeadCardIndex: -1 // Index of the player with highest lead suit card
   };
   
   // Card values and suits
@@ -159,7 +158,6 @@ document.addEventListener('DOMContentLoaded', function() {
       gameState.firstTrick = true;
       gameState.trickInterrupted = false;
       gameState.highestLeadCardIndex = -1;
-      gameState.nextTurnSkipped = false;
       
       // Hide setup, show game
       setupContainer.style.display = 'none';
@@ -418,15 +416,12 @@ document.addEventListener('DOMContentLoaded', function() {
           penaltyPlayerArea.classList.add('penalty-pickup');
       }
       
-      // Set flag to skip next player's turn
-      gameState.nextTurnSkipped = true;
-      
-      // Clear the trick pile
+      // Clear the trick pile and prepare for next round
       setTimeout(() => {
-          // Determine next player (skip one player)
-          let nextPlayerIndex = (throwAwayPlayerIndex + 2) % gameState.players.length;
+          // Set the next player to be the player with the highest lead card
+          let nextPlayerIndex = gameState.highestLeadCardIndex;
           
-          // Skip players who are out
+          // Skip players who are out (should not happen but added as a safety check)
           while (gameState.players[nextPlayerIndex].isOut) {
               nextPlayerIndex = (nextPlayerIndex + 1) % gameState.players.length;
           }
@@ -437,14 +432,13 @@ document.addEventListener('DOMContentLoaded', function() {
           gameState.leadCardValue = null;
           gameState.trickInterrupted = false;
           gameState.highestLeadCardIndex = -1;
-          gameState.nextTurnSkipped = false;
           
           if (penaltyPlayerArea) {
               penaltyPlayerArea.classList.remove('penalty-pickup');
           }
           
           updateStatus(`${playerWithHighestLeadCard.name} picked up the trick. 
-              Next player's turn was skipped. ${gameState.players[nextPlayerIndex].name}'s turn to lead.`);
+              Any remaining players in this round don't get to play. ${gameState.players[nextPlayerIndex].name}'s turn to lead.`);
           
           // Re-render game state
           renderGame();

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bhabhi Tulla Card Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bhabhi Tulla</h1>
+            <div class="options">
+                <button id="new-game-btn">New Game</button>
+                <button id="rules-btn">Game Rules</button>
+            </div>
+        </header>
+
+        <div id="setup-container">
+            <div id="player-setup">
+                <h2>Game Setup</h2>
+                <div>
+                    <label for="player-count">Number of Players:</label>
+                    <select id="player-count">
+                        <option value="3">3 Players</option>
+                        <option value="4" selected>4 Players</option>
+                        <option value="5">5 Players</option>
+                        <option value="6">6 Players</option>
+                    </select>
+                </div>
+                <button id="start-game-btn">Start Game</button>
+            </div>
+        </div>
+
+        <div id="game-container" style="display: none;">
+            <div class="game-board">
+                <div id="status-message"></div>
+                <div id="trick-pile" class="trick-pile"></div>
+                <div id="players-container" class="players-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rules Modal -->
+    <div id="rules-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 class="modal-title">Bhabhi Tulla Rules</h2>
+            <div class="modal-body">
+                <p><strong>Objective:</strong> Be the first to get rid of all the cards in your hand. The last player with cards is the "Bhabhi" (loser).</p>
+                <p><strong>Setup:</strong> The game uses a standard 52-card deck. Each player is dealt an equal number of cards.</p>
+                <p><strong>Gameplay:</strong></p>
+                <ul>
+                    <li>The player holding the Ace of Spades starts the first trick.</li>
+                    <li>Players must follow the suit of the lead card if possible.</li>
+                    <li>If you have cards of the same suit, you must play a higher card than the lead card if possible.</li>
+                    <li>If you can't play a higher card of the same suit, you can play a lower card of the same suit.</li>
+                    <li>If you don't have any cards of the lead suit, you can play any card (it won't win the trick).</li>
+                    <li>The highest card of the lead suit wins the trick.</li>
+                    <li>The winner of the trick leads the next trick.</li>
+                </ul>
+                <p><strong>Card Rankings:</strong> Ace (high) > King > Queen > Jack > 10 > 9 > ... > 2</p>
+                <p><strong>Winning:</strong> The first player to get rid of all their cards wins. The last player with cards is the "Bhabhi" (loser).</p>
+            </div>
+            <button id="close-rules">Close</button>
+        </div>
+    </div>
+
+    <!-- Game End Modal -->
+    <div id="end-game-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Game Over</h2>
+            <div class="modal-body" id="end-game-message"></div>
+            <button id="play-again-btn">Play Again</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

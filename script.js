@@ -30,7 +30,10 @@ document.addEventListener('DOMContentLoaded', function() {
       gameStarted: false,
       gameEnded: false,
       winners: [],
-      firstTrick: true // Track if this is the first trick of the game
+      firstTrick: true, // Track if this is the first trick of the game
+      trickInterrupted: false, // Track if a throw-away card interrupted the trick
+      highestLeadCardIndex: -1, // Index of the player with highest lead suit card
+      nextTurnSkipped: false // Track if the next player's turn should be skipped
   };
   
   // Card values and suits
@@ -150,6 +153,9 @@ document.addEventListener('DOMContentLoaded', function() {
       gameState.gameEnded = false;
       gameState.winners = [];
       gameState.firstTrick = true;
+      gameState.trickInterrupted = false;
+      gameState.highestLeadCardIndex = -1;
+      gameState.nextTurnSkipped = false;
       
       // Hide setup, show game
       setupContainer.style.display = 'none';
@@ -260,6 +266,15 @@ document.addEventListener('DOMContentLoaded', function() {
               if (isValidCard(player, card)) {
                   cardElement.addEventListener('click', () => playCard(playerIndex, cardIndex));
                   cardElement.classList.add('valid-card');
+                  
+                  // Add throw-away indicator
+                  if (gameState.trickPile.length > 0) {
+                      const leadCard = gameState.trickPile[0].card;
+                      if (card.suit !== leadCard.suit) {
+                          cardElement.classList.add('throw-away');
+                          cardElement.title = "Throw-away card: Will end the trick and make the player with the highest lead card pick up all cards!";
+                      }
+                  }
               } else {
                   cardElement.classList.add('disabled');
               }
@@ -288,23 +303,9 @@ document.addEventListener('DOMContentLoaded', function() {
       
       if (hasSameSuit) {
           // If player has cards of the lead suit, they must play one
-          if (card.suit !== leadCard.suit) {
-              return false;
-          }
-          
-          // Check if player has higher cards of the same suit
-          const hasHigherCard = player.hand.some(c => 
-              c.suit === leadCard.suit && c.rank > leadCard.rank);
-          
-          if (hasHigherCard) {
-              // Must play a higher card if possible
-              return card.suit === leadCard.suit && card.rank > leadCard.rank;
-          } else {
-              // Can play any card of the same suit
-              return card.suit === leadCard.suit;
-          }
+          return card.suit === leadCard.suit;
       } else {
-          // If player doesn't have cards of the lead suit, they can play any card
+          // If player doesn't have cards of the lead suit, they can play any card (throw-away)
           return true;
       }
   }
@@ -330,10 +331,25 @@ document.addEventListener('DOMContentLoaded', function() {
       if (gameState.trickPile.length === 1) {
           gameState.leadSuit = card.suit;
           gameState.leadCardValue = card.value;
+          gameState.highestLeadCardIndex = playerIndex;
           
           // First trick of the game is now complete
           if (gameState.firstTrick) {
               gameState.firstTrick = false;
+          }
+      }
+      
+      // Check if this is a throw-away card (not of lead suit)
+      const isThrowAway = card.suit !== gameState.leadSuit;
+      
+      // Update the highest lead card index if needed
+      if (!isThrowAway) {
+          // Get the current highest lead card
+          const highestCard = gameState.trickPile.find(play => 
+              play.playerIndex === gameState.highestLeadCardIndex)?.card;
+          
+          if (highestCard && card.suit === highestCard.suit && card.rank > highestCard.rank) {
+              gameState.highestLeadCardIndex = playerIndex;
           }
       }
       
@@ -349,8 +365,15 @@ document.addEventListener('DOMContentLoaded', function() {
               endGame();
               return;
           }
+      }
+      
+      // Handle throw-away card scenario
+      if (isThrowAway && gameState.trickPile.length > 1) {
+          gameState.trickInterrupted = true;
+          handleThrowAway(playerIndex);
+          return;
       } else {
-          // Update status
+          // Update status for normal play
           updateStatus(`${player.name} played ${card.value} of ${card.suit}.`);
       }
       
@@ -366,6 +389,64 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Re-render the game state
       renderGame();
+  }
+  
+  // Handle throw-away card consequences
+  function handleThrowAway(throwAwayPlayerIndex) {
+      const playerWithHighestLeadCard = gameState.players[gameState.highestLeadCardIndex];
+      const throwAwayPlayer = gameState.players[throwAwayPlayerIndex];
+      const throwAwayCard = gameState.trickPile[gameState.trickPile.length - 1].card;
+      
+      updateStatus(`${throwAwayPlayer.name} played a throw-away card (${throwAwayCard.value} of ${throwAwayCard.suit})! 
+          ${playerWithHighestLeadCard.name} must pick up all cards.`);
+      
+      // Add all cards from trick pile to highest lead card player's hand
+      gameState.trickPile.forEach(play => {
+          playerWithHighestLeadCard.hand.push(play.card);
+      });
+      
+      // Highlight the player who has to pick up the cards
+      const penaltyPlayerArea = document.getElementById(`player-${gameState.highestLeadCardIndex}`);
+      if (penaltyPlayerArea) {
+          penaltyPlayerArea.classList.add('penalty-pickup');
+      }
+      
+      // Set flag to skip next player's turn
+      gameState.nextTurnSkipped = true;
+      
+      // Clear the trick pile
+      setTimeout(() => {
+          // Determine next player (skip one player)
+          let nextPlayerIndex = (throwAwayPlayerIndex + 2) % gameState.players.length;
+          
+          // Skip players who are out
+          while (gameState.players[nextPlayerIndex].isOut) {
+              nextPlayerIndex = (nextPlayerIndex + 1) % gameState.players.length;
+          }
+          
+          gameState.currentPlayerIndex = nextPlayerIndex;
+          gameState.trickPile = [];
+          gameState.leadSuit = null;
+          gameState.leadCardValue = null;
+          gameState.trickInterrupted = false;
+          gameState.highestLeadCardIndex = -1;
+          gameState.nextTurnSkipped = false;
+          
+          if (penaltyPlayerArea) {
+              penaltyPlayerArea.classList.remove('penalty-pickup');
+          }
+          
+          updateStatus(`${playerWithHighestLeadCard.name} picked up the trick. 
+              Next player's turn was skipped. ${gameState.players[nextPlayerIndex].name}'s turn to lead.`);
+          
+          // Re-render game state
+          renderGame();
+          
+          // If next player is AI, let it play
+          if (!gameState.players[nextPlayerIndex].isHuman) {
+              setTimeout(playAITurn, 1000);
+          }
+      }, 2500);
   }
   
   function nextPlayer() {
@@ -420,21 +501,46 @@ document.addEventListener('DOMContentLoaded', function() {
           cardToPlay = validCards.reduce((highest, card) => 
               (card.rank > highest.rank) ? card : highest, validCards[0]);
       } else {
-          // Following - try to play lowest card that can win, or lowest card if can't win
           const leadCard = gameState.trickPile[0].card;
+          const hasSameSuit = player.hand.some(c => c.suit === leadCard.suit);
           
-          // Cards of the lead suit that can win
-          const winningCards = validCards.filter(card => 
-              card.suit === leadCard.suit && card.rank > leadCard.rank);
-          
-          if (winningCards.length > 0) {
-              // Play lowest card that can win
-              cardToPlay = winningCards.reduce((lowest, card) => 
-                  (card.rank < lowest.rank) ? card : lowest, winningCards[0]);
+          if (hasSameSuit) {
+              // Has cards of lead suit - try to win efficiently
+              const leadSuitCards = validCards.filter(card => card.suit === leadCard.suit);
+              
+              // Try to find the lowest card that can win
+              const winningCards = leadSuitCards.filter(card => card.rank > leadCard.rank);
+              
+              if (winningCards.length > 0) {
+                  // Play lowest card that can win
+                  cardToPlay = winningCards.reduce((lowest, card) => 
+                      (card.rank < lowest.rank) ? card : lowest, winningCards[0]);
+              } else {
+                  // Can't win - play lowest card
+                  cardToPlay = leadSuitCards.reduce((lowest, card) => 
+                      (card.rank < lowest.rank) ? card : lowest, leadSuitCards[0]);
+              }
           } else {
-              // Can't win - play lowest card
-              cardToPlay = validCards.reduce((lowest, card) => 
-                  (card.rank < lowest.rank) ? card : lowest, validCards[0]);
+              // Does not have lead suit - AI can play a throw-away card
+              // Check if there is a player with a lot of cards who might win the trick
+              const potentialWinner = gameState.highestLeadCardIndex;
+              const playerToTargetIndex = gameState.players.findIndex((p, idx) => 
+                  !p.isOut && p.hand.length > player.hand.length && idx !== playerIndex);
+              
+              // If the player with the highest lead card has a lot of cards, play a throw-away
+              // This is strategic to force them to pick up more cards
+              if (playerToTargetIndex !== -1 && 
+                  potentialWinner === playerToTargetIndex && 
+                  gameState.trickPile.length > 1) {
+                  // Play a throw-away strategically to penalize the player with most cards
+                  // Choose highest throw-away card to maximize the penalty
+                  cardToPlay = validCards.reduce((highest, card) => 
+                      (card.rank > highest.rank) ? card : highest, validCards[0]);
+              } else {
+                  // Play the lowest card (no strategic throw-away needed)
+                  cardToPlay = validCards.reduce((lowest, card) => 
+                      (card.rank < lowest.rank) ? card : lowest, validCards[0]);
+              }
           }
       }
       

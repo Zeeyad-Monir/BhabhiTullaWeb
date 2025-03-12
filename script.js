@@ -62,6 +62,8 @@ document.addEventListener('DOMContentLoaded', function() {
   function showSetup() {
       gameContainer.style.display = 'none';
       setupContainer.style.display = 'block';
+      // Remove game-active class to restore background element opacity
+      document.body.classList.remove('game-active');
   }
   
   function showRules() {
@@ -75,6 +77,8 @@ document.addEventListener('DOMContentLoaded', function() {
   function resetGame() {
       endGameModal.style.display = 'none';
       showSetup();
+      // Remove game-active class (redundant since showSetup also does this, but added for clarity)
+      document.body.classList.remove('game-active');
   }
   
   function createDeck() {
@@ -160,6 +164,9 @@ document.addEventListener('DOMContentLoaded', function() {
       // Hide setup, show game
       setupContainer.style.display = 'none';
       gameContainer.style.display = 'block';
+      
+      // Add class to reduce background element opacity
+      document.body.classList.add('game-active');
       
       // Render game state
       renderGame();
@@ -658,6 +665,9 @@ document.addEventListener('DOMContentLoaded', function() {
       // Show the game-over modal
       endGameMessage.innerHTML = message;
       endGameModal.style.display = 'flex';
+      
+      // Remove the game-active class when the game ends
+      document.body.classList.remove('game-active');
       
       // Show all players' cards
       renderGame();

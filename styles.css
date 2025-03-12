@@ -29,6 +29,7 @@ body {
   animation: float 12s infinite ease-in-out;
   opacity: 0.4;
   z-index: 0;
+  transition: opacity 0.5s ease;
 }
 
 .floating-card .value {
@@ -49,6 +50,16 @@ body {
   border: 2px solid rgba(255, 255, 255, 0.1);
   z-index: 0;
   animation: rotateFloat 15s infinite ease-in-out;
+  transition: opacity 0.5s ease;
+}
+
+/* When game is active, reduce background element opacity */
+body.game-active .floating-card {
+  opacity: 0.15;
+}
+
+body.game-active .card-design {
+  opacity: 0.3;
 }
 
 @keyframes float {

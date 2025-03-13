@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const playersContainer = document.getElementById('players-container');
   const trickPile = document.getElementById('trick-pile');
   const statusMessage = document.getElementById('status-message');
+  const menuBtn = document.getElementById('menu-btn');
   
   // Modals
   const rulesModal = document.getElementById('rules-modal');
@@ -18,6 +19,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const endGameModal = document.getElementById('end-game-modal');
   const endGameMessage = document.getElementById('end-game-message');
   const playAgainBtn = document.getElementById('play-again-btn');
+  const menuModal = document.getElementById('menu-modal');
+  const continueGameBtn = document.getElementById('continue-game-btn');
+  const rulesMenuBtn = document.getElementById('rules-btn-modal');
+  const newGameMenuBtn = document.getElementById('new-game-btn-modal');
   
   // Game state
   let gameState = {
@@ -56,6 +61,16 @@ document.addEventListener('DOMContentLoaded', function() {
   closeModalBtn.addEventListener('click', hideRules);
   startGameBtn.addEventListener('click', startGame);
   playAgainBtn.addEventListener('click', resetGame);
+  menuBtn.addEventListener('click', showMenu);
+  continueGameBtn.addEventListener('click', hideMenu);
+  rulesMenuBtn.addEventListener('click', () => {
+    hideMenu();
+    showRules();
+  });
+  newGameMenuBtn.addEventListener('click', () => {
+    hideMenu();
+    showSetup();
+  });
   
   // Functions
   function showSetup() {
@@ -71,6 +86,14 @@ document.addEventListener('DOMContentLoaded', function() {
   
   function hideRules() {
       rulesModal.style.display = 'none';
+  }
+  
+  function showMenu() {
+      menuModal.style.display = 'flex';
+  }
+  
+  function hideMenu() {
+      menuModal.style.display = 'none';
   }
   
   function resetGame() {
@@ -195,10 +218,11 @@ document.addEventListener('DOMContentLoaded', function() {
           
           const playerName = document.createElement('div');
           playerName.className = 'player-name';
-          playerName.textContent = `${player.name} (${player.hand.length} cards)`;
+          playerName.textContent = `${player.name} (${player.hand.length})`;
           
           if (player.isOut) {
               playerName.textContent += ' - OUT';
+              playerArea.classList.add('player-out');
           }
           
           const playerHand = document.createElement('div');
@@ -217,14 +241,23 @@ document.addEventListener('DOMContentLoaded', function() {
                   playerHand.appendChild(cardElement);
               });
           } else {
-              // Show card backs for AI players
-              player.hand.forEach((_, cardIndex) => {
+              // Show card backs for AI players - limit display to at most 13 cards for clarity
+              const displayCount = Math.min(player.hand.length, 13);
+              for (let i = 0; i < displayCount; i++) {
                   const cardBack = document.createElement('div');
                   cardBack.className = 'card';
                   cardBack.textContent = '🂠';
                   cardBack.style.backgroundColor = '#e76f51';
                   playerHand.appendChild(cardBack);
-              });
+              }
+              
+              // If there are more cards than we're displaying, add an indicator
+              if (player.hand.length > displayCount) {
+                  const moreCards = document.createElement('div');
+                  moreCards.className = 'more-cards';
+                  moreCards.textContent = `+${player.hand.length - displayCount}`;
+                  playerHand.appendChild(moreCards);
+              }
           }
       });
       
@@ -232,7 +265,12 @@ document.addEventListener('DOMContentLoaded', function() {
       gameState.trickPile.forEach((play, index) => {
           const cardElement = createCardElement(play.card);
           cardElement.classList.add('trick-pile-card');
-          cardElement.style.transform = `rotate(${index * 15 - gameState.trickPile.length * 7.5}deg) translateX(${index * 5}px)`;
+          // Position cards in trick pile so they're spread out in a fan pattern
+          const angle = index * (360 / Math.max(4, gameState.trickPile.length * 2));
+          const radius = 40; // Distance from center point
+          const x = radius * Math.cos(angle * Math.PI / 180);
+          const y = radius * Math.sin(angle * Math.PI / 180);
+          cardElement.style.transform = `translate(${x}px, ${y}px) rotate(${angle}deg)`;
           cardElement.style.zIndex = index;
           trickPile.appendChild(cardElement);
       });
